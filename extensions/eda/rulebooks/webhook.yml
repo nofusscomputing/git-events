@@ -1,0 +1,38 @@
+---
+
+- name: Inbound Webhook
+  hosts: localhost
+  match_multiple_rules: true
+
+  sources:
+    - name: Webhook
+      ansible.eda.webhook:
+        host: 0.0.0.0
+        port: "{{ PROBLEM_MATCHER_PORT | default(5000) | int }}"
+        token: "{{ PROBLEM_MATCHER_TOKEN | default('-not-set-') }}"
+
+  rules:
+
+
+    - name: Show workflow_job Action
+      condition: >
+        event.meta.headers['X-GitHub-Event'] == 'workflow_job'
+      actions:
+
+        - debug:
+            msg: "Received workflow_job event with action of {{ event.payload.action }}"
+
+
+    - name: Process Completed workflow_job
+      condition: >
+        event.meta.headers['X-GitHub-Event'] == 'workflow_job'
+          and
+        event.payload.action == 'completed'
+      actions:
+
+        - run_playbook:
+            name: nofusscomputing.git_events.problem_matcher
+            verbosity: 2
+            extra_vars:
+              payload: "{{ event.payload }}"
+              ansible_connection: local
