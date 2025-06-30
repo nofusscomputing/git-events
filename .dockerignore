@@ -1,3 +1,7 @@
+.ansible
 .git
+CONTRIBUTING.md
 docs/
-# includes/
+galaxy.yml
+*.tmp.*
+

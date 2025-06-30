@@ -57,7 +57,7 @@
 
           cat /tmp/job.log | annotations > /tmp/annotations.json;
 
-        executable: bash
+        executable: sh
       changed_when: false
 
 
