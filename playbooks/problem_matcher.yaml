@@ -1,0 +1,105 @@
+---
+- name: Git Problem Matcher
+  gather_facts: false
+  hosts: localhost
+
+
+  tasks:
+
+
+    - name: Get facts from Environment
+      ansible.builtin.set_fact:
+        gitea_url: "{{ lookup('env', 'GITEA_INTERNAL_URL') | default(payload.repository.url) }}"
+        gitea_replace_url: "{{ lookup('env', 'GITEA_URL') | default(payload.repository.url) }}"
+        disable_logging: "{{ not lookup('env', 'ENABLE_DEBUG_LOGGING') | bool | default(false) }}"
+
+
+    - name: Set required Facts
+      ansible.builtin.set_fact:
+        git_url_api: "{{ payload.repository.url | replace(gitea_replace_url, gitea_url) }}"
+        git_url_path_jobs: 'actions/jobs'
+        head_sha: "{{ payload.workflow_job.head_sha }}"
+
+
+    - name: Ensure API Token is defined
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'GIT_API_TOKEN') is defined
+        msg: Environmental variable `GIT_API_TOKEN` must be defined
+
+
+    - name: Ensure required variables exist
+      ansible.builtin.assert:
+        that:
+          - lookup('env', 'GIT_API_TOKEN') | length > 0
+        msg: Environmental variable `GIT_API_TOKEN` must not be empty
+
+
+    - name: Fetch job log
+      ansible.builtin.uri:
+        url: "{{ git_url_api + '/' + git_url_path_jobs + '/' + payload.workflow_job.id | string + '/logs' }}"
+        dest: /tmp/job.log
+        headers:
+          Authorization: token {{ lookup('env', 'GIT_API_TOKEN') }}
+        method: GET
+        return_content: true
+        timeout: 10
+        validate_certs: false
+      no_log: "{{ disable_logging }}"
+
+
+    - name: Trace
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail;
+
+          export GITHUB_ACTOR={{ payload.sender.username }}
+
+          cat /tmp/job.log | annotations > /tmp/annotations.json;
+
+        executable: sh
+      changed_when: false
+
+
+    - name: Load annotations
+      ansible.builtin.set_fact:
+        annotations: "{{ lookup('file', '/tmp/annotations.json') | from_yaml }}"
+
+
+    - name: Fetch Pull Request
+      ansible.builtin.uri:
+        url: "{{ git_url_api + '/pulls/' + annotations.pull_request | string }}"
+        headers:
+          Authorization: token {{ lookup('env', 'GIT_API_TOKEN') }}
+        method: GET
+        return_content: true
+        status_code:
+          - 200
+          - 404
+        timeout: 10
+        validate_certs: false
+      no_log: "{{ disable_logging }}"
+      register: http_get_pull_request
+
+
+    - name: Trace - Display Pull Request State
+      ansible.builtin.debug:
+        msg: "{{ http_get_pull_request.json.state | default('No PR found') }}"
+
+
+    - name: Post review
+      ansible.builtin.uri:
+        url: "{{ git_url_api + '/pulls/' + annotations.pull_request | string + '/reviews' }}"
+        body: "{{ annotations.api_body }}"
+        body_format: json
+        headers:
+          Authorization: token {{ lookup('env', 'GIT_API_TOKEN') }}
+        method: POST
+        return_content: true
+        timeout: 10
+        validate_certs: false
+      no_log: "{{ disable_logging }}"
+      when: >
+        http_get_pull_request.json.state | default('-') != 'closed'
+          and
+        http_get_pull_request.status == 200

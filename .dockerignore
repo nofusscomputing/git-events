@@ -1,0 +1,7 @@
+.ansible
+.git
+CONTRIBUTING.md
+docs/
+galaxy.yml
+*.tmp.*
+

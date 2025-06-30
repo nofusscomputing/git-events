@@ -1,0 +1,5 @@
+# Temp directories / files
+
+.ansible/
+artifacts/
+*.tmp.*
