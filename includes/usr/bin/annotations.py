@@ -6,14 +6,6 @@ import json
 # import requests
 import os
 
-# Setup CLI argument parsing
-# parser = argparse.ArgumentParser(description="Parse input and POST to API.")
-# parser.add_argument("url", nargs="?", help="API endpoint URL", default=os.getenv("API_URL"))
-# args = parser.parse_args()
-
-# if not args.url:
-#     print("❌ Error: API endpoint URL must be provided as an argument or via the API_URL environment variable.")
-#     sys.exit(1)
 
 
 def default_matcher( entry ) -> dict:
@@ -64,10 +56,6 @@ def default_matcher( entry ) -> dict:
 
 def pylint_matcher( entry ) -> dict:
 
-    # print(f'{entry}')
-
-    # annotation = {}
-
     if not entry.get('line', int(1)):
 
         comment_line = 1
@@ -76,17 +64,43 @@ def pylint_matcher( entry ) -> dict:
 
         comment_line = int(entry.get('line', int(1)))
 
-    return {
-        "body": str(
-            f"> [!IMPORTANT] \n"
+    severity = str(entry['severity']).lower()
+    default_admonition_level = 'NOTE'
+
+    if severity in [ 'major' ]:
+
+        default_admonition_level = 'IMPORTANT'
+
+    if severity in [ 'minor' ]:
+
+        default_admonition_level = 'WARNING'
+
+    body = str(
+            f"> [!{default_admonition_level}] "
             f"\n> "
-            f"\n>**{entry['severity']} in file: {entry['path']}**"
-            f"_Line: {entry.get('line', 0)}_ "
+            f"\n>**Severity**: {severity} "
+            f"\n>**file**: _{entry['path']}_ "
+            f"**Line**: _{entry.get('line', 0)}_ "
             f"\n>"
             f"\n> [{entry['check_name']}]({entry['url']}): {entry['description']} "
-            f"_{entry.get('body', '')}_ "
             f"\n>"
-        ),
+        )
+
+
+    if(
+        entry.get('body', '') != 'None'
+        and entry.get('body', '') != ''
+        and entry.get('body', '') is not None
+    ):
+
+        body = body + str(
+            f"\n>_{entry.get('body', '')}_ "
+            f"\n>"
+        )
+
+
+    return {
+        "body": body,
         "new_position": comment_line,
         "old_position": 0,
         "path": str(entry['path'])
@@ -97,7 +111,6 @@ def pylint_matcher( entry ) -> dict:
 
 
 
-# Yaml Lint
 regex = {
 
     "default": os.getenv("PROBLEM_MATCHER_REGEX",
@@ -123,9 +136,8 @@ regex = {
         # r'(?:(?:,\s*"lines":\s*\{\s*"begin":\s*)|(?:{"line":\s))(?P<line>\d+)?.*?\}},'
         # r'(?:\s"content":\s\{"body":\s"(?P<body>.+?)")?'
 
-
         # \{\s*"type":\s*"(?P<type>[^"]+)",\s*"check_name":\s*"(?P<check_name>[^"]+)",\s*"categories":\s*\[(?P<categories>[^\]]*)\],\s*"url":\s*"(?P<url>[^"]+)",\s*"severity":\s*"(?P<severity>[^"]+)",\s*"description":\s*"(?P<description>[^"]+)",\s*"fingerprint":\s*"(?P<fingerprint>[^"]+)",\s*"location":\s*\{\s*"path":\s*"(?P<path>[^"]+)".+?"line[s]?":.+?(?P<line>\d+)?.*?\}},(?:\s"content":\s\{"body":\s"(?P<body>.+?)")?
-    
+
         r'\{\s*"type":\s*"(?P<type>[^"]+)",\s*'
         r'"check_name":\s*"(?P<check_name>[^"]+)",\s*'
         r'"categories":\s*\[(?P<categories>[^\]]*)\],\s*'
@@ -140,11 +152,6 @@ regex = {
 }
 
 
-# tool_name = os.getenv("PROBLEM_MATCHER_TOOL_NAME", '')
-# What level to fail on
-
-# Regex pattern
-
 
 results = {}
 
@@ -157,19 +164,15 @@ matcher_type = re.compile(r'NFC_PROBLEM_MATCHER_TYPE=(?P<type>[a-z_-]+)')
 
 regex_type = 'default'
 pattern = re.compile( regex[regex_type] )
-# Read and parse lines
-for line in sys.stdin:
 
+
+for line in sys.stdin:
 
     match_matcher_type = matcher_type.search(line)
 
     if match_matcher_type:
         regex_type = match_matcher_type['type']
         pattern = re.compile( regex[regex_type] )
-
-
-
-    # print(f'matcher type is {regex_type}')
 
 
     match = pattern.finditer(line)
@@ -182,49 +185,36 @@ for line in sys.stdin:
 
         pull_request = int(problem_matcher['pull_number'])
 
-    if match:
 
-        # print(f'was match: {match}')
+    if match:
 
         if regex_type not in results:
             results[regex_type] = []
 
-        # print(match.groupdict())
 
         for obj in match:
 
-            # print(f'obj: {obj}')
-
             results[regex_type].append(obj.groupdict())
+
 
 
 if not NFC_PROBLEM_MATCHER:
 
     sys.exit(2)
 
+
 if not results:
     print("No matching lines found.")
     sys.exit(0)
 
-# Output JSON locally for visibility
-# print("Parsed JSON:")
-# print(json.dumps(results, indent=2))
 
 api_body: dict = {
   "body": "boo",
-  "comments": [
-    # {
-    #   "body": "[line-length] line too long (96 > 80 characters) - 7",
-    #   "new_position": 22,
-    #   "old_position": 0,
-    #   "path": "Application-alert-manager.yaml"
-    # }
-  ],
+  "comments": [],
   "commit_id": os.getenv("GITHUB_SHA"),
   "event": "REQUEST_CHANGES"
 }
 
-# Send to API
 
 type_count = {}
 
