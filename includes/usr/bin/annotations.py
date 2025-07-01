@@ -13,32 +13,21 @@ def default_matcher( entry, tool_name = '' ) -> dict:
     if tool_name == 'default':
         tool_name = ''
     else:
-
         tool_name = tool_name + ' '
 
     filename = str(entry['file'])
-
-    msg_type = str(entry['type']).upper()
-
-    # if msg_type in type_count:
-
-    #     type_count[msg_type] += 1
-
-    # else:
-
-    #     type_count[msg_type] = 1
 
     if filename.startswith('./'):
 
         filename = str(entry['file'])[2:]
 
     admonition_level = 'NOTE'
-    if msg_type in [ 'ERROR' ]:
+    if str(entry['type']).upper() in [ 'ERROR' ]:
 
         admonition_level = 'IMPORTANT'
 
 
-    elif msg_type in [ 'WARNING' ]:
+    elif str(entry['type']).upper() in [ 'WARNING' ]:
 
         admonition_level = 'WARNING'
 
@@ -46,7 +35,7 @@ def default_matcher( entry, tool_name = '' ) -> dict:
     body =str (
         f"> [!{admonition_level}]"
         "\n>"
-        f"\n> **{tool_name}Severity:** _{str(msg_type).lower()}_ "
+        f"\n> **{tool_name}Severity:** _{str(entry['type']).lower()}_ "
         f"\n> **file**: _{filename}_ "
         f"**Line**: _{str(entry['line'])}_ **Column**: _{str(entry['column'])}_"
         "\n>"
@@ -263,6 +252,7 @@ review_body = {
     )
 }
 
+
 for msg_type, cnt in type_count.items():
 
     if msg_type not in review_body:
@@ -273,6 +263,7 @@ for msg_type, cnt in type_count.items():
 
 
 api_body['body'] = review_body['header']
+
 
 for msg_type, value in review_body.items():
 
