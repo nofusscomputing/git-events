@@ -231,23 +231,52 @@ for tool, tool_results in results.items():
             api_body['comments'] += [ pylint_matcher( entry ) ]
 
 
-review_body = '## :no_entry_sign: Annotations found\n\n' \
-    f'@{os.getenv("GITHUB_ACTOR")}, found some issues.\n\n' \
-    '| Type | Count | \n|:---|:---:| \n'
+        if tool not in type_count:
+
+            type_count[tool] = 1
+
+        else:
+
+            type_count[tool] += 1
+
+
+review_body = {
+    'header': str(
+        '## :no_entry_sign: Annotations found \n' \
+        f'@{os.getenv("GITHUB_ACTOR")}, \n\n'
+        'I found some issues that need addressing. \n\n'
+    )
+}
 
 for msg_type, cnt in type_count.items():
 
-    review_body += f'| {msg_type} | {cnt} | \n'
+    if msg_type not in review_body:
+
+        review_body[msg_type] = str('| Type | Count | \n|:---|:---:| \n')
+
+    review_body[msg_type] += f'| {msg_type} | {cnt} | \n'
 
 
-api_body['body'] = review_body + '\n'
+api_body['body'] = review_body['header']
+
+for msg_type, value in review_body.items():
+
+    if msg_type != 'header':
+
+        api_body['body'] += str(
+            f'### {msg_type} issues found '
+            '\n'
+            f'{value}\n'
+            '\n'
+        )
+
 
 data = {
     "pull_request": pull_request,
     "api_body": api_body
 }
 
-print(json.dumps(data))
+print(json.dumps(data, indent=4))
 
 
 # URL = os.getenv("GITHUB_API_URL") + '/repos/' + os.getenv("GITHUB_REPOSITORY") + '/pulls/' + os.getenv("GITHUB_REF_NAME") + '/reviews?token=' + str(os.getenv("AGITHUB_TOKEN"))
