@@ -74,20 +74,20 @@ def pylint_matcher( entry ) -> dict:
         comment_line = int(entry.get('line', int(1)))
 
     severity = str(entry['severity']).lower()
-    default_admonition_level = 'NOTE'
+    admonition_level = 'NOTE'
 
     if severity in [ 'major' ]:
 
-        default_admonition_level = 'IMPORTANT'
+        admonition_level = 'IMPORTANT'
 
     if severity in [ 'minor' ]:
 
-        default_admonition_level = 'WARNING'
+        admonition_level = 'WARNING'
 
     body = str(
-            f"> [!{default_admonition_level}] "
+            f"> [!{admonition_level}] "
             f"\n> "
-            f"\n>**Severity**: {severity} "
+            f"\n>**PyLint Severity**: {severity} "
             f"\n>**file**: _{entry['path']}_ "
             f"**Line**: _{entry.get('line', 0)}_ "
             f"\n>"
