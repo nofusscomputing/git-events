@@ -8,42 +8,51 @@ import os
 
 
 
-def default_matcher( entry ) -> dict:
+def default_matcher( entry, tool_name = '' ) -> dict:
 
+    if tool_name == 'default':
+        tool_name = ''
+    else:
+
+        tool_name = tool_name + ' '
 
     filename = str(entry['file'])
 
     msg_type = str(entry['type']).upper()
 
-    if msg_type in type_count:
+    # if msg_type in type_count:
 
-        type_count[msg_type] += 1
+    #     type_count[msg_type] += 1
 
-    else:
+    # else:
 
-        type_count[msg_type] = 1
+    #     type_count[msg_type] = 1
 
     if filename.startswith('./'):
 
         filename = str(entry['file'])[2:]
 
-    body = f"> [!NOTE]\n>\n> **{msg_type} in file: {filename}** " \
-        f"_Line: {str(entry['line'])} Column: {str(entry['column'])}_" \
-        f"\n>\n> _{str(entry['text'])}_\n>"
-
+    admonition_level = 'NOTE'
     if msg_type in [ 'ERROR' ]:
 
+        admonition_level = 'IMPORTANT'
 
-
-        body = f"> [!IMPORTANT]\n>\n> **{msg_type} in file: {filename}** " \
-            f"_Line: {str(entry['line'])} Column: {str(entry['column'])}_" \
-            f"\n>\n> _{str(entry['text'])}_\n>"
 
     elif msg_type in [ 'WARNING' ]:
 
-        body = f"> [!WARNING]\n>\n> **{msg_type} in file: {filename}** " \
-            f"_Line: {str(entry['line'])} Column: {str(entry['column'])}_" \
-            f"\n>\n> _{str(entry['text'])}_\n>"
+        admonition_level = 'WARNING'
+
+
+    body =str (
+        f"> [!{admonition_level}]"
+        "\n>"
+        f"\n> **{tool_name}Severity:** _{str(msg_type).lower()}_ "
+        f"\n> **file**: _{filename}_ "
+        f"**Line**: _{str(entry['line'])}_ **Column**: _{str(entry['column'])}_"
+        "\n>"
+        f"\n> {str(entry['text'])}"
+        "\n>"
+    )
 
     return {
         "body": body,
