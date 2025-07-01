@@ -8,8 +8,8 @@
     - name: Webhook
       ansible.eda.webhook:
         host: 0.0.0.0
-        port: "{{ PROBLEM_MATCHER_PORT | default(5000) | int }}"
-        token: "{{ PROBLEM_MATCHER_TOKEN | default('-not-set-') }}"
+        port: "{{ GIT_EVENT_RULEBOOK_PORT | default(5000) | int }}"
+        token: "{{ GIT_EVENT_RULEBOOK_TOKEN | default('-not-set-') }}"
 
   rules:
 

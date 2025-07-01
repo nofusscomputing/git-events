@@ -9,14 +9,14 @@
 
     - name: Get facts from Environment
       ansible.builtin.set_fact:
-        gitea_url: "{{ lookup('env', 'GITEA_INTERNAL_URL') | default(payload.repository.url) }}"
-        gitea_replace_url: "{{ lookup('env', 'GITEA_URL') | default(payload.repository.url) }}"
+        git_api_url: "{{ lookup('env', 'GIT_INTERNAL_API_URL') | default(payload.repository.url) }}"
+        gitea_replace_url: "{{ lookup('env', 'GIT_API_URL') | default(payload.repository.url) }}"
         disable_logging: "{{ not lookup('env', 'ENABLE_DEBUG_LOGGING') | bool | default(false) }}"
 
 
     - name: Set required Facts
       ansible.builtin.set_fact:
-        git_url_api: "{{ payload.repository.url | replace(gitea_replace_url, gitea_url) }}"
+        git_url_api: "{{ payload.repository.url | replace(gitea_replace_url, git_api_url) }}"
         git_url_path_jobs: 'actions/jobs'
         head_sha: "{{ payload.workflow_job.head_sha }}"
 

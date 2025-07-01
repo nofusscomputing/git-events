@@ -8,7 +8,7 @@ if [ $# -eq 0 ]; then
 
     ansible-rulebook \
         -r nofusscomputing.git_events.${GIT_EVENT_RULEBOOK_NAME} \
-        --env-vars PROBLEM_MATCHER_PORT,PROBLEM_MATCHER_TOKEN \
+        --env-vars GIT_EVENT_RULEBOOK_PORT,GIT_EVENT_RULEBOOK_TOKEN \
         -v;
 
 else
