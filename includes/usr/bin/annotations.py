@@ -181,12 +181,16 @@ for line in sys.stdin:
 
     if match_matcher_type:
         regex_type = match_matcher_type['type']
-        pattern = re.compile( regex[regex_type] )
+
+
+        if regex_type in regex:
+
+            pattern = re.compile( regex[regex_type] )
 
 
     match = pattern.finditer(line)
 
-    problem_matcher = matcher.search(line,)
+    problem_matcher = matcher.search(line)
 
     if problem_matcher:
 
@@ -231,14 +235,13 @@ for tool, tool_results in results.items():
 
     for entry in tool_results:
 
-        if tool == 'default':
-
-            api_body['comments'] += [ default_matcher( entry ) ]
-
-        elif tool == 'pylint-json':
+        if tool == 'pylint-json':
 
             api_body['comments'] += [ pylint_matcher( entry ) ]
 
+        else:
+
+            api_body['comments'] += [ default_matcher( entry, tool_name = tool ) ]
 
         if tool not in type_count:
 
