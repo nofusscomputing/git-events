@@ -20,7 +20,10 @@
       actions:
 
         - debug:
-            msg: "Received workflow_job event with action of {{ event.payload.action }}"
+            msg: |-
+              Received workflow_job event from {{ event.payload.sender.username + ' ' -}}
+              for repository {{ event.payload.repository.full_name + ' ' -}}
+              with action of {{ event.payload.action }}
 
 
     - name: Process Completed workflow_job

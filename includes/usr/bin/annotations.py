@@ -8,42 +8,40 @@ import os
 
 
 
-def default_matcher( entry ) -> dict:
+def default_matcher( entry, tool_name = '' ) -> dict:
 
+    if tool_name == 'default':
+        tool_name = ''
+    else:
+        tool_name = tool_name + ' '
 
     filename = str(entry['file'])
-
-    msg_type = str(entry['type']).upper()
-
-    if msg_type in type_count:
-
-        type_count[msg_type] += 1
-
-    else:
-
-        type_count[msg_type] = 1
 
     if filename.startswith('./'):
 
         filename = str(entry['file'])[2:]
 
-    body = f"> [!NOTE]\n>\n> **{msg_type} in file: {filename}** " \
-        f"_Line: {str(entry['line'])} Column: {str(entry['column'])}_" \
-        f"\n>\n> _{str(entry['text'])}_\n>"
+    admonition_level = 'NOTE'
+    if str(entry['type']).upper() in [ 'ERROR' ]:
 
-    if msg_type in [ 'ERROR' ]:
-
+        admonition_level = 'IMPORTANT'
 
 
-        body = f"> [!IMPORTANT]\n>\n> **{msg_type} in file: {filename}** " \
-            f"_Line: {str(entry['line'])} Column: {str(entry['column'])}_" \
-            f"\n>\n> _{str(entry['text'])}_\n>"
+    elif str(entry['type']).upper() in [ 'WARNING' ]:
 
-    elif msg_type in [ 'WARNING' ]:
+        admonition_level = 'WARNING'
 
-        body = f"> [!WARNING]\n>\n> **{msg_type} in file: {filename}** " \
-            f"_Line: {str(entry['line'])} Column: {str(entry['column'])}_" \
-            f"\n>\n> _{str(entry['text'])}_\n>"
+
+    body =str (
+        f"> [!{admonition_level}]"
+        "\n>"
+        f"\n> **{tool_name}Severity:** _{str(entry['type']).lower()}_ "
+        f"\n> **file**: _{filename}_ "
+        f"**Line**: _{str(entry['line'])}_ **Column**: _{str(entry['column'])}_"
+        "\n>"
+        f"\n> {str(entry['text'])}"
+        "\n>"
+    )
 
     return {
         "body": body,
@@ -65,20 +63,20 @@ def pylint_matcher( entry ) -> dict:
         comment_line = int(entry.get('line', int(1)))
 
     severity = str(entry['severity']).lower()
-    default_admonition_level = 'NOTE'
+    admonition_level = 'NOTE'
 
     if severity in [ 'major' ]:
 
-        default_admonition_level = 'IMPORTANT'
+        admonition_level = 'IMPORTANT'
 
     if severity in [ 'minor' ]:
 
-        default_admonition_level = 'WARNING'
+        admonition_level = 'WARNING'
 
     body = str(
-            f"> [!{default_admonition_level}] "
+            f"> [!{admonition_level}] "
             f"\n> "
-            f"\n>**Severity**: {severity} "
+            f"\n>**PyLint Severity**: {severity} "
             f"\n>**file**: _{entry['path']}_ "
             f"**Line**: _{entry.get('line', 0)}_ "
             f"\n>"
@@ -160,11 +158,11 @@ NFC_PROBLEM_MATCHER = False
 pull_request: int = None
 
 matcher = re.compile(r'NFC_PROBLEM_MATCHER=(?P<pull_number>\d+)')
-matcher_type = re.compile(r'NFC_PROBLEM_MATCHER_TYPE=(?P<type>[a-z_-]+)')
+matcher_type = re.compile(r'NFC_PROBLEM_MATCHER_TYPE=(?P<type>[a-zA-Z_-]+)')
 
 regex_type = 'default'
 pattern = re.compile( regex[regex_type] )
-
+matcher_name = 'Default Matcher'
 
 for line in sys.stdin:
 
@@ -172,12 +170,19 @@ for line in sys.stdin:
 
     if match_matcher_type:
         regex_type = match_matcher_type['type']
-        pattern = re.compile( regex[regex_type] )
+        matcher_name = match_matcher_type['type']
 
+        if regex_type in regex:
+
+            pattern = re.compile( regex[regex_type] )
+
+        else:
+
+            pattern = re.compile( regex['default'] )
 
     match = pattern.finditer(line)
 
-    problem_matcher = matcher.search(line,)
+    problem_matcher = matcher.search(line)
 
     if problem_matcher:
 
@@ -188,13 +193,13 @@ for line in sys.stdin:
 
     if match:
 
-        if regex_type not in results:
-            results[regex_type] = []
+        if matcher_name not in results:
+            results[matcher_name] = []
 
 
         for obj in match:
 
-            results[regex_type].append(obj.groupdict())
+            results[matcher_name].append(obj.groupdict())
 
 
 
@@ -222,32 +227,62 @@ for tool, tool_results in results.items():
 
     for entry in tool_results:
 
-        if tool == 'default':
-
-            api_body['comments'] += [ default_matcher( entry ) ]
-
-        elif tool == 'pylint-json':
+        if tool == 'pylint-json':
 
             api_body['comments'] += [ pylint_matcher( entry ) ]
 
+        else:
 
-review_body = '## :no_entry_sign: Annotations found\n\n' \
-    f'@{os.getenv("GITHUB_ACTOR")}, found some issues.\n\n' \
-    '| Type | Count | \n|:---|:---:| \n'
+            api_body['comments'] += [ default_matcher( entry, tool_name = tool ) ]
+
+        if tool not in type_count:
+
+            type_count[tool] = 1
+
+        else:
+
+            type_count[tool] += 1
+
+
+review_body = {
+    'header': str(
+        '## :no_entry_sign: Annotations found \n' \
+        f'@{os.getenv("GITHUB_ACTOR")}, \n\n'
+        'I found some issues that need addressing. \n\n'
+    )
+}
+
 
 for msg_type, cnt in type_count.items():
 
-    review_body += f'| {msg_type} | {cnt} | \n'
+    if msg_type not in review_body:
+
+        review_body[msg_type] = str('| Type | Count | \n|:---|:---:| \n')
+
+    review_body[msg_type] += f'| {msg_type} | {cnt} | \n'
 
 
-api_body['body'] = review_body + '\n'
+api_body['body'] = review_body['header']
+
+
+for msg_type, value in review_body.items():
+
+    if msg_type != 'header':
+
+        api_body['body'] += str(
+            f'### {msg_type} issues found '
+            '\n'
+            f'{value}\n'
+            '\n'
+        )
+
 
 data = {
     "pull_request": pull_request,
     "api_body": api_body
 }
 
-print(json.dumps(data))
+print(json.dumps(data, indent=4))
 
 
 # URL = os.getenv("GITHUB_API_URL") + '/repos/' + os.getenv("GITHUB_REPOSITORY") + '/pulls/' + os.getenv("GITHUB_REF_NAME") + '/reviews?token=' + str(os.getenv("AGITHUB_TOKEN"))
