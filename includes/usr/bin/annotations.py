@@ -173,7 +173,7 @@ matcher_type = re.compile(r'NFC_PROBLEM_MATCHER_TYPE=(?P<type>[a-z_-]+)')
 
 regex_type = 'default'
 pattern = re.compile( regex[regex_type] )
-
+matcher_name = 'Default Matcher'
 
 for line in sys.stdin:
 
@@ -181,12 +181,15 @@ for line in sys.stdin:
 
     if match_matcher_type:
         regex_type = match_matcher_type['type']
-
+        matcher_name = match_matcher_type['type']
 
         if regex_type in regex:
 
             pattern = re.compile( regex[regex_type] )
 
+        else:
+
+            pattern = re.compile( regex['default'] )
 
     match = pattern.finditer(line)
 
@@ -201,13 +204,13 @@ for line in sys.stdin:
 
     if match:
 
-        if regex_type not in results:
-            results[regex_type] = []
+        if matcher_name not in results:
+            results[matcher_name] = []
 
 
         for obj in match:
 
-            results[regex_type].append(obj.groupdict())
+            results[matcher_name].append(obj.groupdict())
 
 
 
