@@ -1,3 +1,4 @@
+ARG GIT_EVENT_RULEBOOK_NAME='problem_matcher'
 
 FROM python:3.11-alpine3.22 AS Build
 
@@ -49,7 +50,11 @@ RUN cd /tmp/python_modules; \
 
 
 
+
 FROM python:3.11-alpine3.22
+
+
+ARG GIT_EVENT_RULEBOOK_NAME
 
 
 RUN apk --no-cache update; \
@@ -62,6 +67,8 @@ ENV ANSIBLE_FORCE_COLOR true
 ENV ANSIBLE_INVENTORY hosts.yaml
 
 ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk
+
+ENV GIT_EVENT_RULEBOOK_NAME ${GIT_EVENT_RULEBOOK_NAME}
 
 
 COPY includes/ /
@@ -80,6 +87,7 @@ RUN pip install --no-cache-dir /tmp/python_builds/*; \
     rm -rf /home/eda/.ansible/collections/ansible_collections/nofusscomputing/git_events/includes; \
     mv /usr/bin/annotations.py /usr/bin/annotations; \
     chmod +x /usr/bin/annotations; \
+    chmod +x /entrypoint.sh; \
     chown eda:eda -R /home/eda;
 
 
@@ -89,9 +97,4 @@ WORKDIR /home/eda
 USER eda
 
 
-CMD [ \
-    "ansible-rulebook", \
-    "-r", "nofusscomputing.git_events.webhook", \
-    "--env-vars", "PROBLEM_MATCHER_PORT,PROBLEM_MATCHER_TOKEN", \
-    "-v" \
-]
+ENTRYPOINT [ "/entrypoint.sh" ]
