@@ -169,7 +169,7 @@ NFC_PROBLEM_MATCHER = False
 pull_request: int = None
 
 matcher = re.compile(r'NFC_PROBLEM_MATCHER=(?P<pull_number>\d+)')
-matcher_type = re.compile(r'NFC_PROBLEM_MATCHER_TYPE=(?P<type>[a-z_-]+)')
+matcher_type = re.compile(r'NFC_PROBLEM_MATCHER_TYPE=(?P<type>[a-zA-Z_-]+)')
 
 regex_type = 'default'
 pattern = re.compile( regex[regex_type] )
