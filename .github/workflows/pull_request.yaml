@@ -1,0 +1,17 @@
+---
+
+name: Pull Requests
+
+
+on:
+  pull_request: {}
+
+jobs:
+
+  ci-test:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Test
+        run: |
+          echo "github";
