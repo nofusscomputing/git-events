@@ -14,9 +14,23 @@
         disable_logging: "{{ not lookup('env', 'ENABLE_DEBUG_LOGGING') | bool | default(false) }}"
 
 
+    - name: Set var gitea_replace_url if empty
+      ansible.builtin.set_fact:
+        git_api_url: "{{ payload.repository.url }}"
+      when: >
+       git_api_url == ""
+
+
+    - name: Set var gitea_replace_url if empty
+      ansible.builtin.set_fact:
+        gitea_replace_url: "{{ payload.repository.url }}"
+      when: >
+       gitea_replace_url == ""
+
+
     - name: Set required Facts
       ansible.builtin.set_fact:
-        git_url_api: "{{ payload.repository.url | replace(gitea_replace_url, git_api_url) }}"
+        git_url_api: "{{ payload.repository.url | replace((gitea_replace_url | split('/api/'))[0], git_api_url) }}"
         git_url_path_jobs: 'actions/jobs'
         head_sha: "{{ payload.workflow_job.head_sha }}"
 
