@@ -30,6 +30,15 @@ Documentation for the collection.
 
 ### Setup Parsing of matchers
 
+1. Before any parsing can be done the following must be output with the id of the pull request to enable the problem matcher parsing.
+
+    ``` bash
+
+    echo "NFC_PROBLEM_MATCHER=${GITHUB_REF_NAME}";
+
+    ```
+
+
 1. Ansible Lint
 
     1. before pylint runs, ensure the following commands are executed in your workflow.
