@@ -1,0 +1,28 @@
+---
+
+name: Lint (Pull Request)
+
+
+on:
+  pull_request: {}
+
+
+jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+
+      # - name: Enable Matcher Service
+      #   run: |
+      #     echo "NFC_PROBLEM_MATCHER=${GITHUB_REF_NAME}";
+
+      - uses: actions/checkout@v3
+
+      - name: Install YAMLLint
+        run: pip install yamllint
+
+      - name: Run YAMLLint
+        run: |
+          echo "NFC_PROBLEM_MATCHER_TYPE=YAML-Lint"
+          yamllint -f github . || true
