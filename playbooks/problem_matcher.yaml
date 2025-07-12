@@ -94,11 +94,15 @@
         validate_certs: false
       no_log: "{{ disable_logging }}"
       register: http_get_pull_request
+      when: >
+        annotations.pull_request | string
 
 
     - name: Trace - Display Pull Request State
       ansible.builtin.debug:
         msg: "{{ http_get_pull_request.json.state | default('No PR found') }}"
+      when: >
+        not http_get_pull_request.skipped | bool | default(false)
 
 
     - name: Post review
@@ -116,4 +120,6 @@
       when: >
         http_get_pull_request.json.state | default('-') != 'closed'
           and
-        http_get_pull_request.status == 200
+        http_get_pull_request.status | default(0) == 200
+          and
+        not http_get_pull_request.skipped | bool | default(false)

@@ -205,7 +205,11 @@ for line in sys.stdin:
 
 if not NFC_PROBLEM_MATCHER:
 
-    sys.exit(2)
+    print(json.dumps({
+        'pull_request': ''
+    }, indent=4))
+
+    sys.exit(0)
 
 
 if not results:
