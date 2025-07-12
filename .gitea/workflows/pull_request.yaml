@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # - name: Enable Matcher Service
-      #   run: |
-      #     echo "NFC_PROBLEM_MATCHER=${GITHUB_REF_NAME}";
+      - name: Enable Matcher Service
+        run: |
+          echo "NFC_PROBLEM_MATCHER=${GITHUB_REF_NAME}";
 
       - uses: actions/checkout@v3
 
