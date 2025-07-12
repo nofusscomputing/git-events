@@ -284,10 +284,9 @@ for msg_type, value in review_body.items():
 if len(api_body['comments']) == 0:
 
     api_body.update({
+        'body': "G'day, I didn't find any problems to report on",
         'event': 'APPROVE'
     })
-    del api_body['body']
-
 
 
 data = {
