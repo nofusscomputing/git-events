@@ -67,7 +67,9 @@
         cmd: |
           set -o pipefail;
 
-          export GITHUB_ACTOR={{ payload.sender.username }}
+          export GITHUB_ACTOR={{ payload.sender.username }};
+
+          export GITHUB_SHA={{ payload.workflow_job.head_sha }};
 
           cat /tmp/job.log | annotations > /tmp/annotations.json;
 
@@ -102,7 +104,7 @@
       ansible.builtin.debug:
         msg: "{{ http_get_pull_request.json.state | default('No PR found') }}"
       when: >
-        not http_get_pull_request.skipped | bool | default(false)
+        not http_get_pull_request.skipped | default(false) | bool
 
 
     - name: Post review
@@ -122,4 +124,4 @@
           and
         http_get_pull_request.status | default(0) == 200
           and
-        not http_get_pull_request.skipped | bool | default(false)
+        not http_get_pull_request.skipped | default(false) | bool
