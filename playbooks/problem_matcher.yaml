@@ -18,14 +18,14 @@
       ansible.builtin.set_fact:
         git_api_url: "{{ payload.repository.url }}"
       when: >
-       git_api_url == ""
+        git_api_url == ""
 
 
     - name: Set var gitea_replace_url if empty
       ansible.builtin.set_fact:
         gitea_replace_url: "{{ payload.repository.url }}"
       when: >
-       gitea_replace_url == ""
+        gitea_replace_url == ""
 
 
     - name: Set required Facts

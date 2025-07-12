@@ -6,7 +6,7 @@ import json
 # import requests
 import os
 
-
+# API Docs: https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#create-a-review-for-a-pull-request
 
 def default_matcher( entry, tool_name = '' ) -> dict:
 
@@ -275,6 +275,15 @@ for msg_type, value in review_body.items():
             f'{value}\n'
             '\n'
         )
+
+
+if len(api_body['comments']) == 0:
+
+    api_body.update({
+        'event': 'APPROVE'
+    })
+    del api_body['body']
+
 
 
 data = {
