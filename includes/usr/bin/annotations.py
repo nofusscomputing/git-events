@@ -144,8 +144,8 @@ regex = {
         r'"description":\s*"(?P<description>[^"]+)",\s*'
         r'"fingerprint":\s*"(?P<fingerprint>[^"]+)",\s*'
         r'"location":\s*\{\s*"path":\s*"(?P<path>[^"]+)".+?'
-        r'"line[s]?":.+?(?P<line>\d+).*?\}},'
-        r'(?:\s"content":\s\{"body":\s"(?P<body>.+?)")?'
+        r'"line[s]?":.+?(?P<line>\d+).*?\}}'
+        r'(?:,\s"content":\s\{"body":\s"(?P<body>.+?)")?'
     )
 }
 
