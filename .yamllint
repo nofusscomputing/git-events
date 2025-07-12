@@ -1,0 +1,77 @@
+---
+
+# extends: default
+
+
+ignore:
+  - '.github/'
+  - '**/crd/**'
+  - mkdocs.yml
+  - '*PrometheusRule*'
+  - '**/source/**'
+
+rules:
+  braces:
+    level: error
+    max-spaces-inside: 1
+    min-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  brackets:
+    level: error
+    max-spaces-inside: 1
+    min-spaces-inside: 1
+    min-spaces-inside-empty: 0
+    max-spaces-inside-empty: 0
+
+  colons:
+    level: warning
+    max-spaces-after: 1
+
+  commas:
+    level: warning
+
+  comments:
+    level: error
+    require-starting-space: true
+    ignore-shebangs: true
+    min-spaces-from-content: 4
+
+  comments-indentation:
+    level: error
+
+  document-end:
+    level: error
+    present: false
+
+  document-start:
+    level: error
+    present: true
+
+  empty-lines:
+    level: error
+    max: 3
+    max-start: 0
+    max-end: 0
+
+  hyphens:
+    level: error
+    max-spaces-after: 1
+
+  indentation:
+    level: error
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: true
+
+  line-length:
+    level: warning
+    max: 100
+    allow-non-breakable-inline-mappings: true
+
+  new-lines:
+    level: error
+    type: unix
+
+  truthy: disable
