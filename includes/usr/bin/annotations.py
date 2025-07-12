@@ -6,7 +6,7 @@ import json
 # import requests
 import os
 
-
+# API Docs: https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#create-a-review-for-a-pull-request
 
 def default_matcher( entry, tool_name = '' ) -> dict:
 
@@ -144,8 +144,8 @@ regex = {
         r'"description":\s*"(?P<description>[^"]+)",\s*'
         r'"fingerprint":\s*"(?P<fingerprint>[^"]+)",\s*'
         r'"location":\s*\{\s*"path":\s*"(?P<path>[^"]+)".+?'
-        r'"line[s]?":.+?(?P<line>\d+).*?\}},'
-        r'(?:\s"content":\s\{"body":\s"(?P<body>.+?)")?'
+        r'"line[s]?":.+?(?P<line>\d+).*?\}}'
+        r'(?:,\s"content":\s\{"body":\s"(?P<body>.+?)")?'
     )
 }
 
@@ -205,7 +205,11 @@ for line in sys.stdin:
 
 if not NFC_PROBLEM_MATCHER:
 
-    sys.exit(2)
+    print(json.dumps({
+        'pull_request': ''
+    }, indent=4))
+
+    sys.exit(0)
 
 
 if not results:
@@ -275,6 +279,14 @@ for msg_type, value in review_body.items():
             f'{value}\n'
             '\n'
         )
+
+
+if len(api_body['comments']) == 0:
+
+    api_body.update({
+        'body': "G'day, I didn't find any problems to report on",
+        'event': 'APPROVE'
+    })
 
 
 data = {

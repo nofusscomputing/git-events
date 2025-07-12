@@ -18,19 +18,21 @@
       ansible.builtin.set_fact:
         git_api_url: "{{ payload.repository.url }}"
       when: >
-       git_api_url == ""
+        git_api_url == ""
 
 
     - name: Set var gitea_replace_url if empty
       ansible.builtin.set_fact:
         gitea_replace_url: "{{ payload.repository.url }}"
       when: >
-       gitea_replace_url == ""
+        gitea_replace_url == ""
 
 
     - name: Set required Facts
       ansible.builtin.set_fact:
-        git_url_api: "{{ payload.repository.url | replace((gitea_replace_url | split('/api/'))[0], git_api_url) }}"
+        git_url_api: >-
+          {{ payload.repository.url |
+          replace((gitea_replace_url | split('/api/'))[0], git_api_url) }}
         git_url_path_jobs: 'actions/jobs'
         head_sha: "{{ payload.workflow_job.head_sha }}"
 
@@ -51,7 +53,9 @@
 
     - name: Fetch job log
       ansible.builtin.uri:
-        url: "{{ git_url_api + '/' + git_url_path_jobs + '/' + payload.workflow_job.id | string + '/logs' }}"
+        url: >-
+          {{ git_url_api + '/' + git_url_path_jobs
+          + '/' + payload.workflow_job.id | string + '/logs' }}
         dest: /tmp/job.log
         headers:
           Authorization: token {{ lookup('env', 'GIT_API_TOKEN') }}
@@ -67,7 +71,9 @@
         cmd: |
           set -o pipefail;
 
-          export GITHUB_ACTOR={{ payload.sender.username }}
+          export GITHUB_ACTOR={{ payload.sender.username }};
+
+          export GITHUB_SHA={{ payload.workflow_job.head_sha }};
 
           cat /tmp/job.log | annotations > /tmp/annotations.json;
 
@@ -94,11 +100,15 @@
         validate_certs: false
       no_log: "{{ disable_logging }}"
       register: http_get_pull_request
+      when: >
+        annotations.pull_request | string
 
 
     - name: Trace - Display Pull Request State
       ansible.builtin.debug:
         msg: "{{ http_get_pull_request.json.state | default('No PR found') }}"
+      when: >
+        not http_get_pull_request.skipped | default(false) | bool
 
 
     - name: Post review
@@ -113,7 +123,11 @@
         timeout: 10
         validate_certs: false
       no_log: "{{ disable_logging }}"
+      # yamllint disable rule:indentation
       when: >
         http_get_pull_request.json.state | default('-') != 'closed'
           and
-        http_get_pull_request.status == 200
+        http_get_pull_request.status | default(0) == 200
+          and
+        not http_get_pull_request.skipped | default(false) | bool
+      # yamllint enable rule:indentation

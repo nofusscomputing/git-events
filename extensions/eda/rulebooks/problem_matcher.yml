@@ -27,10 +27,12 @@
 
 
     - name: Process Completed workflow_job
+      # yamllint disable rule:indentation
       condition: >
         event.meta.headers['X-GitHub-Event'] == 'workflow_job'
           and
         event.payload.action == 'completed'
+      # yamllint enable rule:indentation
       actions:
 
         - run_playbook:

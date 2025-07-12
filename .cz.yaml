@@ -12,7 +12,9 @@ commitizen:
       - fix
       - test
       - refactor
+    # yamllint disable rule:line-length
     commit_parser: ^(?P<change_type>feat|fix|test|refactor|perf|BREAKING CHANGE)(?:\((?P<scope>[^()\r\n]*)\)|\()?(?P<breaking>!)?:\s(?P<message>.*)?
+    # yamllint enable rule:line-length
   name: cz_customize
   prerelease_offset: 1
   tag_format: $version
