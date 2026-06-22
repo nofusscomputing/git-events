@@ -13,12 +13,12 @@
   rules:
 
     - name: Log every event
-      condition: event is defined
+      condition: true
       action:
         - print_event:
             pretty: true
 
     - name: Trace
-      condition: event is defined
+      condition: true
       action:
         debug:
