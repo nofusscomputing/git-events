@@ -2,7 +2,7 @@
 
 - name: echo Webhook
   hosts: localhost
-  match_multiple_rules: true
+  # match_multiple_rules: true
 
   sources:
     - name: Webhook
@@ -18,7 +18,13 @@
     #     - print_event:
     #         pretty: true
 
-    - name: Trace
+    # - name: Trace
+    #   condition: true
+    #   actions:
+    #     - debug:
+
+    - name: Webhook rule
       condition: true
-      actions:
-        - debug:
+      action:
+        print_event:
+          pretty: true
