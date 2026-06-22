@@ -18,12 +18,12 @@
     #     - print_event:
     #         pretty: true
 
-    # - name: Trace
-    #   condition: true
-    #   actions:
-    #     - debug:
+    - name: Debug print event
+      condition: true
+      actions:
+        - debug:
 
-    - name: Webhook rule
+    - name: Trace print event
       condition: true
       action:
         print_event:
