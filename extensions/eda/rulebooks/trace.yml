@@ -20,5 +20,5 @@
 
     - name: Trace
       condition: true
-      action:
-        debug:
+      actions:
+        - debug:
