@@ -23,7 +23,7 @@
     #   actions:
     #     - debug:
 
-    - name: Trace print event - {{ event.payload.repository.full_name }}
+    - name: Trace print event - {{ payload.repository.full_name }}
       condition: true
       action:
         print_event:
