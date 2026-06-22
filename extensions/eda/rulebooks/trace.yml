@@ -2,7 +2,7 @@
 
 - name: echo Webhook
   hosts: localhost
-  # match_multiple_rules: true
+  match_multiple_rules: true
 
   sources:
     - name: Webhook
