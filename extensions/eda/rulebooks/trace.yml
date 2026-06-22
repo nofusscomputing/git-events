@@ -12,11 +12,11 @@
 
   rules:
 
-    - name: Log every event
-      condition: true
-      action:
-        - print_event:
-            pretty: true
+    # - name: Log every event
+    #   condition: true
+    #   action:
+    #     - print_event:
+    #         pretty: true
 
     - name: Trace
       condition: true
