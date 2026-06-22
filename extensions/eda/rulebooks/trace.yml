@@ -12,10 +12,7 @@
 
   rules:
 
-
-    - name: Trace Output
-      condition: true
+    - name: Log every event
+      condition: event is defined
       actions:
-
-        - debug:
-            msg: "{{ event }}"
+        - print_event:
