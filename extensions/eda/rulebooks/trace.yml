@@ -14,5 +14,11 @@
 
     - name: Log every event
       condition: event is defined
-      actions:
+      action:
         - print_event:
+            pretty: true
+
+    - name: Trace
+      condition: event is defined
+      action:
+        debug:
