@@ -18,15 +18,14 @@
     #     - print_event:
     #         pretty: true
 
-    # - name: Debug print event
-    #   condition: true
-    #   actions:
-    #     - debug:
+    - name: Debug print event
+      condition: true
+      actions:
+        - debug:
+            msg: "{{ event.meta.headers }}"
 
     - name: Trace print event
       condition: true
       actions:
         - print_event:
             pretty: true
-        - debug:
-          msg: "{{ event.meta.headers }}"
