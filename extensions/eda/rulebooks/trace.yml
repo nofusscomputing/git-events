@@ -22,7 +22,7 @@
       condition: true
       actions:
         - debug:
-            msg: "{{ event.meta.headers }}"
+            msg: "{{ event }}"
 
     - name: Trace print event
       condition: true
