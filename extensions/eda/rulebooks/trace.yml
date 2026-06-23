@@ -2,7 +2,7 @@
 
 - name: echo Webhook
   hosts: localhost
-  # match_multiple_rules: true
+  match_multiple_rules: true
 
   sources:
     - name: Webhook
@@ -25,6 +25,8 @@
 
     - name: Trace print event
       condition: true
-      action:
-        print_event:
-          pretty: true
+      actions:
+        - print_event:
+            pretty: true
+        - debug:
+          msg: "{{ event.meta.headers }}"
